@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Diario Montañés - Local News</title>
+    <title>{{ category.replace(',', ' - ')|title }} - El Diario Montañés</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -69,6 +69,7 @@
         }
         
         .category {
+            background-color: #3498db;
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -90,29 +91,16 @@
             background-color: #2980b9;
         }
         
-        .filters {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
         }
         
-        .filter-btn {
-            padding: 8px 16px;
-            background-color: #ecf0f1;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .filter-btn:hover {
-            background-color: #bdc3c7;
-        }
-        
-        .filter-btn.active {
-            background-color: #3498db;
-            color: white;
+        .back-link:hover {
+            text-decoration: underline;
         }
         
         .stats {
@@ -127,38 +115,28 @@
             .news-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .filters {
-                justify-content: center;
-            }
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>🏔️ El Diario Montañés</h1>
-        <p>Local News from Cantabria</p>
+        <p>{{ category.replace(',', ' - ')|title }} News</p>
     </div>
     
     <div class="container">
-        <div class="stats">
-            <h3>📊 Today's Local News</h3>
-            <p><strong>{{ articles|length }}</strong> local articles with cached titles</p>
-            <p><small>🚀 Optimized: One request to fetch all article data</small></p>
-        </div>
+        <a href="/" class="back-link">← Back to All News</a>
         
-        <div class="filters">
-            <button class="filter-btn active" onclick="filterByCategory('all')">All News</button>
-            {% for category in categories %}
-            <button class="filter-btn" onclick="filterByCategory('{{ category|lower }}')">{{ category.replace(',', ' - ')|title }}</button>
-            {% endfor %}
+        <div class="stats">
+            <h3>📊 {{ category.replace(',', ' - ')|title }} News</h3>
+            <p><strong>{{ articles|length }}</strong> articles in this category</p>
         </div>
         
         <div class="news-grid">
             {% for article in articles %}
-            <div class="news-card" data-category="{{ article.category.lower() }}">
+            <div class="news-card">
                 <div class="news-meta">
-                    <span class="category" style="background-color: {{ category_colors[article.category] }}">{{ article.category.replace(',', ' - ')|title }}</span>
+                    <span class="category">{{ article.category.replace(',', ' - ')|title }}</span>
                     <span class="date">{{ article.date }}</span>
                 </div>
                 
@@ -169,30 +147,5 @@
             {% endfor %}
         </div>
     </div>
-    
-    <script>
-        function filterByCategory(category) {
-            const cards = document.querySelectorAll('.news-card');
-            
-            cards.forEach(card => {
-                if (category === 'all' || card.dataset.category === category) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            // Update active button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-        }
-        
-        // Auto-refresh every 10 minutes
-        setInterval(() => {
-            location.reload();
-        }, 600000);
-    </script>
 </body>
 </html>

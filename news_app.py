@@ -20,6 +20,26 @@ def get_news_data():
         print(f"Error fetching news: {e}")
         return []
 
+def get_category_color(category):
+    """Generate a consistent color for each category"""
+    colors = [
+        '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', 
+        '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#8e44ad',
+        '#16a085', '#27ae60', '#2980b9', '#c0392b', '#d35400'
+    ]
+    # Use hash of category name to get consistent color
+    index = hash(category) % len(colors)
+    return colors[index]
+
+def get_all_categories(urls):
+    """Extract all unique categories from the URLs"""
+    categories = set()
+    for url in urls:
+        category = extracter.extract_category(url)
+        if category:
+            categories.add(category)
+    return sorted(categories)
+
 def extract_article_info(url):
     """Extract title and basic info from URL"""
     # Extract date from URL (format: YYYYMMDD)
@@ -71,14 +91,19 @@ def home():
     urls = get_news_data()
     articles = []
     
-    # Process only first 15 articles for better performance
     # (fetching titles from individual pages takes time)
-    for url in urls[:15]:
+    for url in urls:
         print(f"Fetching title for: {url}")
         article_info = extract_article_info(url)
         articles.append(article_info)
     
-    return render_template('index.html', articles=articles)
+    # Get all unique categories from the articles
+    categories = get_all_categories(urls)
+    
+    # Generate category colors
+    category_colors = {cat: get_category_color(cat) for cat in categories}
+    
+    return render_template('index.html', articles=articles, categories=categories, category_colors=category_colors)
 
 @app.route('/api/news')
 def api_news():
@@ -91,6 +116,18 @@ def api_news():
         articles.append(article_info)
     
     return jsonify(articles)
+
+@app.route('/api/categories')
+def api_categories():
+    """API endpoint to get all categories as JSON"""
+    urls = get_news_data()
+    categories = get_all_categories(urls)
+    category_colors = {cat: get_category_color(cat) for cat in categories}
+    
+    return jsonify({
+        'categories': categories,
+        'category_colors': category_colors
+    })
 
 @app.route('/category/<category_name>')
 def category_news(category_name):
